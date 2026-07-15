@@ -8,7 +8,7 @@ This project is in its initial setup phase. Below is a snapshot of what exists s
 
 ## What's been built
 
-### Backend server (`server/`)
+### Backend server (`backend/`)
 - Express 5 app (`server.js`) with CORS and JSON body parsing enabled
 - Health check route (`GET /`) and a DB connectivity test route (`GET /database-test`)
 - PostgreSQL connection pool (`db.js`) via `pg`, configured from environment variables

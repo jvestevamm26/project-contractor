@@ -35,6 +35,7 @@ CREATE TABLE services (
     FOREIGN KEY (contractor_id) REFERENCES contractor_profiles(id)
 );
 
+
 CREATE TABLE projects (
     id SERIAL PRIMARY KEY,
     client_id INTEGER NOT NULL,
@@ -49,6 +50,7 @@ CREATE TABLE projects (
     FOREIGN KEY (client_id) REFERENCES users(id),
     FOREIGN KEY (contractor_id) REFERENCES contractor_profiles(id)
 );
+
 CREATE TABLE project_images (
     id SERIAL PRIMARY KEY,
     project_id INTEGER NOT NULL,
@@ -58,6 +60,7 @@ CREATE TABLE project_images (
 
     FOREIGN KEY (project_id) REFERENCES projects(id)
 );
+
 CREATE TABLE reviews (
     id SERIAL PRIMARY KEY,
     project_id INTEGER NOT NULL,
@@ -71,6 +74,7 @@ CREATE TABLE reviews (
     FOREIGN KEY (client_id) REFERENCES users(id),
     FOREIGN KEY (contractor_id) REFERENCES contractor_profiles(id)
 );
+
 CREATE TABLE messages (
     id SERIAL PRIMARY KEY,
     sender_id INTEGER NOT NULL,
@@ -83,6 +87,7 @@ CREATE TABLE messages (
     FOREIGN KEY (receiver_id) REFERENCES users(id),
     FOREIGN KEY (project_id) REFERENCES projects(id)
 );
+
 CREATE TABLE payments (
     id SERIAL PRIMARY KEY,
     project_id INTEGER NOT NULL,
