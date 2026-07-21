@@ -22,8 +22,22 @@ function App() {
                 <Route index element={<Home />} />
                 <Route path="login" element={<Login />} />
                 <Route path="register" element={<Register />} />
-                <Route path="services" element={<Services />} />
-                <Route path="services/:id" element={<ServiceDetail />} />
+                <Route
+                    path="services"
+                    element={
+                        <ProtectedRoute>
+                            <Services />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="services/:id"
+                    element={
+                        <ProtectedRoute>
+                            <ServiceDetail />
+                        </ProtectedRoute>
+                    }
+                />
                 <Route
                     path="services/new"
                     element={
@@ -57,7 +71,14 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
-                <Route path="assistant" element={<Assistant />} />
+                <Route
+                    path="assistant"
+                    element={
+                        <ProtectedRoute>
+                            <Assistant />
+                        </ProtectedRoute>
+                    }
+                />
                 <Route path="*" element={<NotFound />} />
             </Route>
         </Routes>

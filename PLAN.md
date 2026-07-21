@@ -40,6 +40,7 @@
 - [x] Env-based API base URL (`VITE_API_URL` in `frontend/.env`) for local vs deployed backend
 - [ ] Browse/detail pages for contractors directly (only services browse exists so far)
 - [x] Create-service/create-project forms auto-resolve `contractor_id`/`client_id` from the logged-in user (Phase 4)
+- [x] Browse Services, Service Detail, and AI Assistant are now login-gated: nav links hidden for guests, routes wrapped in `ProtectedRoute` so direct URL access also redirects to `/login`. Home page hero CTA is auth-aware (shows Get Started/Log In for guests, Browse Services once logged in). Reminder: this is still client-side-only gating — no server route is verified yet (Phase 2), so it stops casual browsing, not a determined API caller.
 
 ## 👤 4. Contractor and client dashboards
 - [x] Role-aware routing after login (`/dashboard` renders `ContractorDashboard` or `ClientDashboard` based on `user.role`)
@@ -55,7 +56,9 @@
 - [x] `OPENAI_API_KEY` added to `backend/.env` (real key in place, gitignored) — verified live: real OpenAI calls return correct explanations, correct trade-category classification, and correctly matched real services from the DB
 - [x] Frontend: `/assistant` page with chat bubble UI, linked from the navbar, open to all visitors
 - [x] Fixed a real bug found during setup: the `openai` SDK throws at construction time if the key is missing, which was crashing the *entire* backend on boot, not just the AI feature. Client is now lazily constructed inside the request handler; missing key now returns a clean 503 instead of taking down the whole API.
-- [ ] Not yet done: rate limiting / abuse protection on the AI endpoint, conversation history isn't persisted (resets on page reload), no auth requirement
+- [x] Multi-turn triage: AI defaults to asking a clarifying question (up to 3) when the problem could point to more than one trade, instead of guessing — with an explicit safety-first override so dangerous situations (gas smell, flooding, exposed wiring) always get an immediate warning instead of a question. Every AI text field is capped at one short sentence.
+- [x] Photo upload: client can attach a photo (max 5MB, client-side check) alongside their message; sent to OpenAI's vision-capable model (`gpt-4o-mini` already supports this) as a base64 data URL. Backend `express.json()` limit raised from Express's 100kb default to 10mb to fit image payloads. AI is instructed to use the photo to skip straight to a confident answer when possible, or ask about what the photo doesn't show.
+- [ ] Not yet done: rate limiting / abuse protection on the AI endpoint, conversation history isn't persisted (resets on page reload), no auth requirement, images are re-sent in full on every turn of a conversation (fine for short conversations, would bloat request size in a long one)
 
 ## 📷 6. Upload project photos
 - [ ] File upload middleware (`multer`) on the server
@@ -82,8 +85,3 @@
 - [ ] CORS: lock down `cors()` to the deployed frontend origin instead of wide open
 - [ ] Smoke test full flow in production (register → login → post project → hire → pay)
 
-## Suggested order
-1 (finish backend CRUD + reviews) → 2 (auth middleware) → 3 (React shell) → 4 (dashboards) →
-6 (photo upload, since projects/services need it) → 7 (messaging) → 8 (Stripe) → 5 (OpenAI, can slot in anytime) → 9 (deploy)
-
-Adjust freely — 5 (OpenAI) has no dependencies on the others and can be pulled earlier or later.

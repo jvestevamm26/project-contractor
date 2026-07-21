@@ -14,10 +14,10 @@ function Navbar() {
         <header className="navbar">
             <Link to="/" className="brand">Project Contractor</Link>
             <nav>
-                <Link to="/services">Browse Services</Link>
-                <Link to="/assistant">AI Assistant</Link>
                 {user ? (
                     <>
+                        <Link to="/services">Browse Services</Link>
+                        <Link to="/assistant">AI Assistant</Link>
                         <Link to="/dashboard">Dashboard</Link>
                         <button type="button" onClick={handleLogout}>Log out</button>
                     </>

@@ -221,3 +221,30 @@
   color: inherit;
   font: inherit;
 }
+
+.chat-attach {
+  padding: 0.55rem 1rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.chat-image {
+  display: block;
+  max-width: 100%;
+  max-height: 220px;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.chat-attachment-preview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.chat-attachment-preview img {
+  max-height: 90px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}

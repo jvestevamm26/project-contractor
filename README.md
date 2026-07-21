@@ -1,48 +1,52 @@
 # Project Contractor
 
-A backend API for a contractor/services marketplace — connecting clients with contractors for projects, services, reviews, and payments.
+A home-services marketplace connecting clients with contractors — post a service, request work, track project status, and get AI-assisted help figuring out what kind of contractor you need.
 
-## Status: Early backend scaffolding
+Full roadmap and detailed progress tracking: [PLAN.md](PLAN.md).
 
-This project is in its initial setup phase. Below is a snapshot of what exists so far.
+## Stack
 
-## What's been built
+- **Backend**: Node.js / Express 5, PostgreSQL (`pg`), bcrypt + JWT auth, OpenAI SDK
+- **Frontend**: React 19 + Vite, React Router, Axios
+- **Database**: PostgreSQL, schema in [`database/schema.sql`](database/schema.sql)
 
-### Backend server (`backend/`)
-- Express 5 app (`server.js`) with CORS and JSON body parsing enabled
-- Health check route (`GET /`) and a DB connectivity test route (`GET /database-test`)
-- PostgreSQL connection pool (`db.js`) via `pg`, configured from environment variables
-- `.env`-based configuration (loaded with `dotenv`, gitignored)
+## Project structure
 
-### Auth & Users
-- `POST /api/users/register` — creates a user, hashing passwords with `bcrypt`
-- `POST /api/users/login` — verifies credentials and issues a JWT (`jsonwebtoken`, 1-day expiry)
-- MVC-style structure: `routes/userRoutes.js` → `controllers/userController.js` → `models/userModel.js`
+```
+backend/     Express API (routes → controllers → models), MVC-style
+frontend/    React app (Vite)
+database/    SQL schema
+```
 
-### Database schema (`database/`)
-Tables defined for the full marketplace domain, not just users yet:
-- `users` — accounts with role and location
-- `contractor_profiles` — skills, experience, hourly rate, linked 1:1 to a user
-- `services` — offerings posted by contractors
-- `projects` — client ↔ contractor engagements with status tracking
-- `project_images` — images attached to a project
-- `reviews` — ratings/comments tied to a completed project
-- `messages` — direct messages between users, optionally scoped to a project
-- `payments` — payment records per project
+## Running locally
 
-Only the `users` table is currently wired up to actual API code; the rest of the schema is scaffolded ahead of the corresponding routes/controllers/models.
+Requires a local PostgreSQL database matching `backend/.env` (`DB_USER`, `DB_HOST`, `DB_NAME`, `DB_PASSWORD`, `DB_PORT`), plus `JWT_SECRET` and `OPENAI_API_KEY` set there too.
+
+```
+cd backend && node server.js      # http://localhost:5000
+cd frontend && npm run dev        # http://localhost:5173
+```
+
+## What's built
+
+### Auth & users
+Register/login with bcrypt-hashed passwords and JWT issuance. Roles: `client` or `contractor`.
+
+### Contractors
+Create a profile (business name, skills, rate, availability) and post services. Dashboard shows your own services and incoming project requests, with accept/decline actions.
+
+### Clients
+Browse posted services, request a contractor directly from a service page (auto-fills the request — no manual IDs), and track your posted projects' status (pending → accepted/declined → in progress → completed) from your dashboard.
+
+### AI Assistant (`/assistant`)
+Describe a problem in plain language; OpenAI explains what's likely wrong and classifies it into a trade category, then the backend matches it against real posted services — the AI never invents contractors, it only classifies. Requires a valid `OPENAI_API_KEY` in `backend/.env`.
+
+### API surface
+MVC structure per resource (`routes/` → `controllers/` → `models/`) for `users`, `contractors`, `services`, `projects`, and `ai`. Endpoints return proper status codes (400 for bad input, 409 for conflicts, 404 for missing records) rather than generic 500s.
 
 ## Not yet in place
-- No routes/controllers/models beyond `users`
-- No auth middleware to protect routes with the issued JWT
-- No input validation
-- No tests
 
-## Housekeeping note
-`database/schema.sql` shows as deleted in git status while `database/schema.sql1` is untracked — looks like the file may have been accidentally recreated with a stray `1` in the name. Worth confirming and renaming back to `schema.sql` before committing.
-
-## Tech stack
-- Node.js / Express 5
-- PostgreSQL (`pg`)
-- bcrypt, jsonwebtoken
-- cors, dotenv
+See [PLAN.md](PLAN.md) for the full breakdown, but the big gaps:
+- No server-side auth middleware yet — JWTs are issued and used by the frontend, but no route currently verifies them, so the API trusts whatever `client_id`/`contractor_id` it's given
+- No reviews, photo uploads, real-time messaging, or payments
+- Not deployed — local dev only

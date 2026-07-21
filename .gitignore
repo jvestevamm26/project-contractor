@@ -5,6 +5,9 @@ node_modules
 .env
 *.local
 
+# Personal notes, not for GitHub
+*.local.md
+
 # Uploads
 uploads
 
@@ -31,3 +34,4 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
