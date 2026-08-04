@@ -14,3 +14,17 @@ export const getProjectsByContractor = (contractorId) =>
 
 export const updateProjectStatus = (id, status) =>
     api.patch(`/api/projects/${id}/status`, { status }).then((res) => res.data);
+
+export const getProjectImages = (id) =>
+    api.get(`/api/projects/${id}/images`).then((res) => res.data);
+
+export const uploadProjectImage = (id, file) => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    return api
+        .post(`/api/projects/${id}/images`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        })
+        .then((res) => res.data);
+};

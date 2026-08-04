@@ -63,11 +63,11 @@ function CreateContractorProfile() {
                 </label>
                 <label>
                     Years of Experience
-                    <input type="number" name="experience_years" value={form.experience_years} onChange={handleChange} />
+                    <input type="number" name="experience_years" value={form.experience_years} onChange={handleChange} min="0" />
                 </label>
                 <label>
                     Hourly Rate
-                    <input type="number" name="hourly_rate" value={form.hourly_rate} onChange={handleChange} step="0.01" />
+                    <input type="number" name="hourly_rate" value={form.hourly_rate} onChange={handleChange} step="0.01" min="0" />
                 </label>
                 {error && <p className="error">{error}</p>}
                 <button type="submit" className="btn btn-primary" disabled={loading}>

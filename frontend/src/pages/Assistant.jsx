@@ -14,8 +14,13 @@ function fileToDataUrl(file) {
 }
 
 function toApiMessages(messages) {
-    return messages.map((message) => {
-        if (!message.imageDataUrl) {
+    const lastImageIndex = messages.reduce(
+        (lastIndex, message, index) => (message.imageDataUrl ? index : lastIndex),
+        -1
+    );
+
+    return messages.map((message, index) => {
+        if (!message.imageDataUrl || index !== lastImageIndex) {
             return { role: message.role, content: message.text };
         }
 

@@ -35,12 +35,25 @@ function ClientDashboard() {
             ) : (
                 <div className="card-grid">
                     {projects.map((project) => (
-                        <Link to={`/projects/${project.id}`} key={project.id} className="card">
-                            <h2>{project.title}</h2>
-                            <p className="muted">Status: {project.status} · {project.location}</p>
-                            <p>{project.description}</p>
-                            <p className="price">${project.price}</p>
-                        </Link>
+                        <div className="card" key={project.id}>
+                            <Link to={`/projects/${project.id}`}>
+                                <h2>{project.title}</h2>
+                                <p className="muted">Status: {project.status} · {project.location}</p>
+                                <p>{project.description}</p>
+                                <p className="price">${project.price}</p>
+                            </Link>
+                            {project.status === "completed" && (
+                                <div className="card-actions">
+                                    <Link
+                                        to={`/projects/${project.id}/review`}
+                                        state={{ contractorId: project.contractor_id }}
+                                        className="btn btn-secondary"
+                                    >
+                                        Leave a Review
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
                     ))}
                 </div>
             )}

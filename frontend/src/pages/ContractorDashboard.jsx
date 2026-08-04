@@ -4,24 +4,28 @@ import { useAuth } from "../context/AuthContext";
 import { getContractorProfileByUserId } from "../api/contractors";
 import { getServicesByContractor } from "../api/services";
 import { getProjectsByContractor, updateProjectStatus } from "../api/projects";
+import { getReviewsByContractor } from "../api/reviews";
 
 function ContractorDashboard() {
     const { user } = useAuth();
     const [profile, setProfile] = useState(null);
     const [services, setServices] = useState([]);
     const [projects, setProjects] = useState([]);
+    const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         getContractorProfileByUserId(user.id)
             .then(async (fetchedProfile) => {
                 setProfile(fetchedProfile);
-                const [contractorServices, contractorProjects] = await Promise.all([
+                const [contractorServices, contractorProjects, contractorReviews] = await Promise.all([
                     getServicesByContractor(fetchedProfile.id),
                     getProjectsByContractor(fetchedProfile.id),
+                    getReviewsByContractor(fetchedProfile.id),
                 ]);
                 setServices(contractorServices);
                 setProjects(contractorProjects);
+                setReviews(contractorReviews);
             })
             .catch(() => setProfile(null))
             .finally(() => setLoading(false));
@@ -100,9 +104,33 @@ function ContractorDashboard() {
                                     </button>
                                 </div>
                             )}
+                            {project.status === "in_progress" && (
+                                <div className="card-actions">
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary"
+                                        onClick={() => handleStatusChange(project.id, "completed")}
+                                    >
+                                        Mark Complete
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
+            )}
+
+            <h2>Reviews</h2>
+            {reviews.length === 0 ? (
+                <p>No reviews yet.</p>
+            ) : (
+                <ul>
+                    {reviews.map((review) => (
+                        <li key={review.id}>
+                            <strong>{review.rating}/5</strong> — {review.comment}
+                        </li>
+                    ))}
+                </ul>
             )}
         </section>
     );

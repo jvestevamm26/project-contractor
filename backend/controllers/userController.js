@@ -7,17 +7,26 @@ const registerUser = async (req, res) => {
     try {
         const { name, email, password, role, location } = req.body;
 
-        if (!name || !email || !password || !role) {
+        const trimmedName = typeof name === "string" ? name.trim() : "";
+        const trimmedEmail = typeof email === "string" ? email.trim() : "";
+
+        if (!trimmedName || !trimmedEmail || !password || !role) {
             return res.status(400).json({
                 message: "Name, email, password, and role are required"
+            });
+        }
+
+        if (role !== "client" && role !== "contractor") {
+            return res.status(400).json({
+                message: "role must be either 'client' or 'contractor'"
             });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = await User.createUser(
-            name,
-            email,
+            trimmedName,
+            trimmedEmail,
             hashedPassword,
             role,
             location
@@ -46,7 +55,9 @@ const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const user = await User.findUserByEmail(email);
+        const trimmedEmail = typeof email === "string" ? email.trim() : "";
+
+        const user = await User.findUserByEmail(trimmedEmail);
 
         if (!user) {
             return res.status(400).json({

@@ -79,7 +79,7 @@ function CreateService() {
                 </label>
                 <label>
                     Price
-                    <input type="number" name="price" value={form.price} onChange={handleChange} step="0.01" />
+                    <input type="number" name="price" value={form.price} onChange={handleChange} step="0.01" min="0" />
                 </label>
                 <label>
                     Location

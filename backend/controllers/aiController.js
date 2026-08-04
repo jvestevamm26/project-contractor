@@ -51,15 +51,50 @@ Hard rules:
 - Never recommend specific companies or people — you don't know who is available.
 - If something sounds dangerous (gas smell, active flooding, exposed wiring, fire risk), say so plainly in that one-sentence explanation and prioritize safety over the question step.`;
 
+const isValidContent = (content) => {
+    if (typeof content === "string") {
+        return content.trim().length > 0;
+    }
+
+    if (Array.isArray(content)) {
+        return content.length > 0 && content.every((part) => part && typeof part === "object" && typeof part.type === "string");
+    }
+
+    return false;
+};
+
+
+const sanitizeMessages = (messages) => {
+    if (!Array.isArray(messages) || messages.length === 0) {
+        return null;
+    }
+
+    const sanitized = [];
+
+    for (const message of messages) {
+        if (!message || !isValidContent(message.content)) {
+            return null;
+        }
+
+        sanitized.push({
+            role: message.role === "assistant" ? "assistant" : "user",
+            content: message.content
+        });
+    }
+
+    return sanitized;
+};
+
+
 const askAssistant = async (req, res) => {
 
     try {
 
-        const { messages } = req.body;
+        const messages = sanitizeMessages(req.body.messages);
 
-        if (!Array.isArray(messages) || messages.length === 0) {
+        if (!messages) {
             return res.status(400).json({
-                message: "messages array is required"
+                message: "messages array is required, and every message needs non-empty content"
             });
         }
 

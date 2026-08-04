@@ -13,6 +13,9 @@ CREATE TABLE users (
 CREATE TABLE contractor_profiles (
     id SERIAL PRIMARY KEY,
     user_id INTEGER UNIQUE NOT NULL,
+    business_name VARCHAR(150),
+    phone VARCHAR(30),
+    availability VARCHAR(100),
     description TEXT,
     skills VARCHAR(255),
     experience_years INTEGER,

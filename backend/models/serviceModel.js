@@ -78,10 +78,39 @@ const searchServicesByKeyword = async (keyword) => {
 };
 
 
+const updateService = async (id, title, category, description, price, location) => {
+    const result = await db.query(
+        `UPDATE services
+        SET title = $1,
+            category = $2,
+            description = $3,
+            price = $4,
+            location = $5
+        WHERE id = $6
+        RETURNING *`,
+        [title, category, description, price, location, id]
+    );
+
+    return result.rows[0];
+};
+
+
+const deleteService = async (id) => {
+    const result = await db.query(
+        "DELETE FROM services WHERE id = $1 RETURNING *",
+        [id]
+    );
+
+    return result.rows[0];
+};
+
+
 module.exports = {
     createService,
     getAllServices,
     getServiceById,
     getServicesByContractor,
-    searchServicesByKeyword
+    searchServicesByKeyword,
+    updateService,
+    deleteService
 };

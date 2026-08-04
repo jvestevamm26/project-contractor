@@ -17,6 +17,7 @@ function Navbar() {
                 {user ? (
                     <>
                         <Link to="/services">Browse Services</Link>
+                        <Link to="/contractors">Browse Contractors</Link>
                         <Link to="/assistant">AI Assistant</Link>
                         <Link to="/dashboard">Dashboard</Link>
                         <button type="button" onClick={handleLogout}>Log out</button>
