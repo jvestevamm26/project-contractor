@@ -15,13 +15,17 @@ Two independent apps in one repo, no shared workspace/monorepo tooling:
 
 Backend (run from `backend/`):
 - `npm start` — runs `node server.js` on `process.env.PORT` (default 5000). No dev/watch script configured.
-- No test suite exists yet (`npm test` is the default placeholder).
+- `npm test` — Jest + Supertest suite in `backend/tests/`. Needs no Postgres or OpenAI: each test file `jest.mock`s the `models/*Model.js` it touches (and `openai` in `ai.test.js`), and `tests/setupEnv.js` sets `JWT_SECRET`/blanks `OPENAI_API_KEY` before dotenv loads. Run one file with `npx jest projects`. Mint auth headers with `bearer(user)` from `tests/helpers.js`.
+- `/api/ai/ask` is rate-limited to 10 req/min per IP for the whole test file — `ai.test.js` keeps its rate-limit test last for that reason.
 
 Frontend (run from `frontend/`):
 - `npm run dev` — Vite dev server
 - `npm run build` — production build
 - `npm run preview` — preview the production build
 - `npm run lint` — `oxlint`
+- `npm test` — Vitest (jsdom + Testing Library), config in `vite.config.js`. Tests sit next to the source as `*.test.jsx`; `src/test/utils.js` has `fakeToken()` for seeding `localStorage`.
+
+CI (`.github/workflows/test.yml`) runs backend tests, plus frontend lint/test/build, on pushes to `master` and on PRs.
 
 Required backend env vars (`backend/.env`, gitignored): `DB_USER`, `DB_HOST`, `DB_NAME`, `DB_PASSWORD`, `DB_PORT`, `PORT`, `JWT_SECRET`, `OPENAI_API_KEY`, `OPENAI_MODEL` (optional, defaults to `gpt-4o-mini`), `FRONTEND_URL` (optional, defaults to `http://localhost:5173` — locks down CORS for both the REST API and the socket.io handshake). See `backend/.env.example`.
 Frontend optionally reads `VITE_API_URL` (defaults to `http://localhost:5000`). See `frontend/.env.example`.
@@ -32,9 +36,9 @@ Plain MVC, no ORM — routes call controllers call models, models issue raw para
 
 `routes/*Routes.js` → `controllers/*Controller.js` → `models/*Model.js` → `db.js`
 
-Each domain (`user`, `contractor`, `service`, `project`, `ai`) has its own route/controller/model file mounted in `server.js` under `/api/<domain>`.
+Each domain (`user`, `contractor`, `service`, `project`, `ai`, `review`, `message`) has its own route/controller/model file mounted in `app.js` under `/api/<domain>`. `app.js` builds and exports the Express app (so tests can import it without binding a port); `server.js` wraps it in an HTTP server, attaches socket.io, and listens.
 
-**Auth is not enforced server-side.** `userController.loginUser` issues a JWT (`{ id, role }`, 1 day expiry) and the frontend attaches it as `Authorization: Bearer <token>` on every request (`frontend/src/api/client.js`), but there is no verification middleware anywhere in `backend/` — no route ever calls `jwt.verify`. Every API route is currently reachable unauthenticated; gating happens only client-side via `ProtectedRoute` (`frontend/src/components/ProtectedRoute.jsx`), which just checks whether a token is present in `localStorage`/`AuthContext`. Keep this in mind before assuming an endpoint is protected — if you add auth-sensitive backend work, you'll likely need to add the missing middleware rather than extend something that already exists.
+**Auth:** `userController.loginUser` issues a JWT (`{ id, role }`, 1 day expiry); the frontend sends it as `Authorization: Bearer <token>` (`frontend/src/api/client.js`). `middleware/authMiddleware.js` provides `authenticate` (verifies the token, sets `req.user`) and `authorize(...roles)`, applied per-route in `routes/*Routes.js`. Most GET/list routes are public; writes are authenticated, and controllers additionally check ownership (e.g. project `client_id === req.user.id`, contractor profile `user_id === req.user.id`). The frontend's `ProtectedRoute` only gates rendering.
 
 **AI assistant** (`backend/controllers/aiController.js`): calls the OpenAI chat completions API with `response_format: json_object` and a system prompt that enforces strict JSON output (`needs_more_info` + `question`, or `explanation`/`category`/`suggestions`). Safety rules (gas smell, flooding, exposed wiring, fire) always short-circuit to an immediate answer, never a clarifying question. Once the model returns a category, `Service.searchServicesByKeyword` does an `ILIKE` match against `services.category/title/description` to produce `matches`. If editing this prompt, preserve the "ask unless genuinely obvious" and one-sentence-per-field constraints — they're load-bearing for the UX in `frontend/src/pages/Assistant.jsx`.
 
